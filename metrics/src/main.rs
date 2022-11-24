@@ -77,7 +77,15 @@ impl TypedValueParser for MapValueParser {
         _arg: Option<&clap::Arg>,
         value: &std::ffi::OsStr,
     ) -> Result<Self::Value, clap::Error> {
-        let map: HashMap<String,String> = Regex::new(r",").unwrap().split(value.to_str().unwrap()).map(|x| key_value_parser(x).unwrap()).collect();
+
+        let map: HashMap<String,String>;
+
+        if value.len() > 0 {
+            map = Regex::new(r",").unwrap().split(value.to_str().unwrap()).map(|x| key_value_parser(x).unwrap()).collect();
+        } else {
+            map = HashMap::new();
+        }
+
         Ok(map)
     }
 }
@@ -106,10 +114,10 @@ pub(crate) struct Configuration {
     #[clap(name ="exclude-collectors", long = "exclude-collectors", env = "EXCLUDE_COLLECTORS", value_parser, value_delimiter(';'))]
     disabled_collectors: Vec<Collectors>,
 
-    #[clap(name ="common-labels", short = 'l', long = "common-labels", env = "COMMON_LABELS", value_parser = MapValueParser::new())]
+    #[clap(name ="common-labels", short = 'l', long = "common-labels", env = "COMMON_LABELS", value_parser = MapValueParser::new(), default_value = "")]
     common_labels: HashMap<String,String>,
 
-    #[clap(name ="histogram-buckets", long = "histogram-buckets", env = "HISTOGRAM_BUCKETS", value_parser, value_delimiter(';'))]
+    #[clap(name ="histogram-buckets", long = "histogram-buckets", env = "HISTOGRAM_BUCKETS", value_parser, value_delimiter(';'), default_value = "0.01;0.1;0.5;1;2;5")]
     histogram_buckets: Vec<f64>,
 }
 
